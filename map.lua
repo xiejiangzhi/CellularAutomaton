@@ -13,6 +13,27 @@ function Map:init(w, h)
 
   self.data = {}
   self:reset()
+  self:setRule('23', '3', 2)
+
+  self.time = 0
+  self.last_updated_at = 0
+  self.update_cycle = 0.1
+  self.suspended = false
+end
+
+function Map:update(dt)
+  if not self.suspended then self.time = self.time + dt end
+
+  while self.time - self.last_updated_at >= self.update_cycle do
+    self.last_updated_at = self.last_updated_at + self.update_cycle
+    self:update_data()
+  end
+end
+
+function Map:setRule(survival_rule, birth_rule, generations)
+  self.survival_rule = survival_rule
+  self.birth_rule = birth_rule
+  self.generations = math.max(generations, 2)
 end
 
 function Map:set(x, y, val)
@@ -24,8 +45,9 @@ function Map:get(x, y)
   return self.data[x][y]
 end
 
-function Map:update()
-  local todo_list = {}
+function Map:update_data()
+  local data = self.data
+  self:reset()
 
   for j = 1, self.h do
     for i = 1, self.w do
@@ -33,20 +55,24 @@ function Map:update()
       for index, point in ipairs(SCAN_POINTS) do
         local x = (self.w + i - 1 + point[1]) % self.w + 1
         local y = (self.h + j - 1 + point[2]) % self.h + 1
-        if self.data[x][y] then total = total + 1 end
-        if total > 3 then break end
+        if data[x][y] and data[x][y] == 1 then total = total + 1 end
       end
 
-      if self.data[i][j] then
-        if total < 2 or total > 3 then table.insert(todo_list, {i, j, false}) end
-      elseif total == 3 then
-        table.insert(todo_list, {i, j, true})
+      local str_total = tostring(total)
+      local is_survival = string.find(self.survival_rule, str_total)
+      local is_birth = string.find(self.birth_rule, str_total)
+
+      if data[i][j] and data[i][j] > 0 then
+        if is_survival then
+          self.data[i][j] = data[i][j]
+        else
+          local v = (data[i][j] + 1) % self.generations
+          if v > 0 then self.data[i][j] = v end
+        end
+      elseif is_birth then
+        self.data[i][j] = 1
       end
     end
-  end
-
-  for i, d in ipairs(todo_list) do
-    self.data[d[1]][d[2]] = d[3]
   end
 end
 
@@ -79,15 +105,16 @@ function Map:eachRect(l, t, w, h, fn)
 end
 
 function Map:reset()
+  self.data = {}
   for i = 1, self.w do self.data[i] = {} end
 end
 
 function Map:random(rate)
-  rate = rate or 0.3
+  rate = rate or 0.2
 
   for y = 1, self.h do
     for x = 1, self.w do
-      if math.random() < rate then map:set(x, y, true) end
+      if math.random() < rate then self.data[x][y] = 1 end
     end
   end
 end
