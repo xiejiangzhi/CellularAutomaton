@@ -2,13 +2,26 @@ Class = require 'classic'
 local Map = require 'map'
 local Camera = require 'camera'
 
-map = nil
-camera = nil
+local map = nil
+local camera = nil
 
-mouse_down_at = 0
+local mouse_down_at = 0
 
-min_scale = 1
-colors = { }
+local min_scale = 1
+local colors = { }
+
+local rule_index = 1
+local rules = {
+  {'GameOfLife', '23', '3', 2},
+  {'Bloomerang', '123478', '23', 8},
+  {'Bombers', '345', '24', 25},
+  {'Brain 6', '6', '256', 3},
+  {"Brian's Brain", '', '2', 3},
+  {"Burstll", '0235678', '3468', 9},
+  {'StarWars', '345', '2', 4},
+  {"ThrillGrill", '1234', '34', 48},
+  {"Xtasy", '1456', '2356', 16},
+}
 
 function love.load()
   math.randomseed(os.time())
@@ -22,7 +35,7 @@ function love.load()
   camera:setScale(min_scale)
 
   map:random(0.3)
-  map:setRule('345', '2', 4)
+  use_rule(rule_index)
 end
 
 function love.update(dt)
@@ -56,16 +69,31 @@ function love.draw()
   love.graphics.print('lift-click place cell, right-click clear cell', 10, 50)
   love.graphics.print('"c" clear all cell', 10, 70)
   love.graphics.print('"r" clear all and place random', 10, 90)
-  love.graphics.print('suspended:' .. tostring(map.suspended) .. ' , "space" stop/recover time', 10, 110)
+  love.graphics.print(
+    'suspended:' .. tostring(map.suspended) .. ' , "space" stop/recover time',
+    10, 110
+  )
+  love.graphics.print(
+    'rule ' .. rules[rule_index][1] ..
+    '(S/B/G):' .. map.survival_rule .. '/' .. map.birth_rule .. '/' .. map.generations,
+    10, 130
+  )
 end
 
 function love.keypressed(key, code)
   if key == 'up' then
-    map.update_cycle = map.update_cycle + 0.1
+    map.update_cycle = map.update_cycle + 0.05
   elseif key == 'down' then
-    map.update_cycle = math.max(0.1, map.update_cycle - 0.1)
+    map.update_cycle = math.max(0.05, map.update_cycle - 0.05)
+  elseif key == 'left' then
+    rule_index = math.max(1, rule_index - 1)
+    use_rule(rule_index)
+  elseif key == 'right' then
+    rule_index = math.min(#rules, rule_index + 1)
+    use_rule(rule_index)
   elseif key == 'r' then
     map:random()
+    colors = {}
   elseif key == 'c' then
     map:reset()
   elseif key == 'space' then
@@ -105,5 +133,10 @@ function place_cellulars(radius, rate)
       map:set(x, y, 1)
     end
   end)
+end
+
+function use_rule(index)
+  local rule = rules[index]
+  map:setRule(rule[2], rule[3], rule[4])
 end
 

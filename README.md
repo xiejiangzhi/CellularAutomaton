@@ -1,7 +1,14 @@
 Game Of Life
 ============
 
-![example](https://github.com/xjz19901211/GameOfLife/blob/master/test.png)
+Game Of Life
+![GameOfLife](https://github.com/xjz19901211/GameOfLife/blob/master/game_of_life.png)
+
+Star Wars
+![StarWars](https://github.com/xjz19901211/GameOfLife/blob/master/star_wars.png)
+
+Xtasy
+![Xtasy](https://github.com/xjz19901211/GameOfLife/blob/master/xtasy.png)
 
 Power by Love2D
 
