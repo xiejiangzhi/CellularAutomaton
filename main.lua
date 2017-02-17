@@ -74,7 +74,7 @@ function love.draw()
     10, 110
   )
   love.graphics.print(
-    'rule ' .. rules[rule_index][1] ..
+    'rule ("left"/"right" switch)' .. rules[rule_index][1] ..
     '(S/B/G):' .. map.survival_rule .. '/' .. map.birth_rule .. '/' .. map.generations,
     10, 130
   )
